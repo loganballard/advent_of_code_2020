@@ -7,7 +7,8 @@ txt = file_input.read().splitlines()
 class Bag:
     adjective = None
     color = None
-    contents: list = None  # list of bags
+    contents: list = None  # list bag, count
+    contains_bag_num: int = 0
 
     def __init__(self) -> None:
         super().__init__()
@@ -34,31 +35,19 @@ for line in txt:
                 sub_bag_color = contained_bags.pop(0)
                 contained_bags.pop(0)
                 sub_bag_tup = (sub_bag_adjective, sub_bag_color)
-                new_bag.contents.append(sub_bag_tup)
+                new_bag.contents.append((sub_bag_tup, sub_bag_number))
+                new_bag.contains_bag_num += int(sub_bag_number)
         bag_obj_map[(adjective, color)] = new_bag
 
 
-bag_contains_gold_map = {
-    ('shiny', 'gold'): True
-}
-
-
-def contains_gold_bag(bag: Bag) -> bool:
-    bag_key = (bag.adjective, bag.color)
-    if bag.adjective == 'shiny' and bag.color == 'gold':
-        return True
-    if bag_key in bag_contains_gold_map.keys():
-        return True
+def count_sub_bags(bag: Bag) -> int:
+    if not bag.contents:
+        return bag.contains_bag_num
+    sub_cnt = 0
     for sub_bag in bag.contents:
-        if sub_bag in bag_contains_gold_map.keys() or contains_gold_bag(bag_obj_map[sub_bag]):
-            bag_contains_gold_map[bag_key] = True
-            return True
-    return False
+        num_of_sub_bags = int(sub_bag[1])
+        sub_cnt += (num_of_sub_bags * count_sub_bags(bag_obj_map[sub_bag[0]]))
+    return sub_cnt + bag.contains_bag_num
 
-cnt = -1  # subtract one (gold bag can't hold itself)
 
-for _, bag in bag_obj_map.items():
-    if contains_gold_bag(bag):
-        cnt += 1
-
-print(cnt)
+print(count_sub_bags(bag_obj_map[('shiny', 'gold')]))
